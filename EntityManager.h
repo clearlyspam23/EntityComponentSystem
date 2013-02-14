@@ -2,9 +2,12 @@
 #define ENTITYMANAGER_H
 
 #include "Typedefs.h"
+#include "EntityTemplate.h"
 #include <list>
 #include <set>
+#include <vector>
 #include <memory>
+#include <utility>
 
 class Entity;
 class EntityTemplate;
@@ -31,13 +34,30 @@ public:
 
 	void addSystem(System* system);
 
+	template<typename T>
+	T* getSystem();
+
+	System* getSystem(unsigned int id);
+
 	void onTick(float delta);
 private:
+	void _modifyEntity(std::shared_ptr<Entity> e, const EntityTemplate& t);
+	void _removeEntity(std::shared_ptr<Entity> entity);
+	void _createEntity(std::shared_ptr<Entity>& entity);
 	EntityManager(const EntityManager& manager);
 	EntityManager& operator=(EntityManager other);
 	std::set<std::shared_ptr<Entity>> _entities;
-	std::set<System*> _systems;
+	std::vector<System*> _systems;
+	std::list<std::shared_ptr<Entity>> toBeAdded;
+	std::list<std::shared_ptr<Entity>> toBeRemoved;
+	std::list<std::pair<std::shared_ptr<Entity>, EntityTemplate>> toBeModified;
 	ENTITY_ID _ID;
 };
+
+template <typename T>
+T* EntityManager::getSystem()
+{
+	return (T*) getSystem(T::SYSTEMID());
+}
 
 #endif //ENTITYMANAGER_H

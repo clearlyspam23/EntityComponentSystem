@@ -1,6 +1,6 @@
 #include "Component.h"
 
-Component* component::create(const size_t& id)
+Component* component::create(size_t id)
 {
 	ComponentRegistry& registry = getComponentRegistry();
 	return registry[id]();
