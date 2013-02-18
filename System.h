@@ -18,8 +18,9 @@ public:
 	System() : _requirements(0) {}
 	virtual ~System() {}
 	virtual void onTick(const double& delta, EntityManager& manager) = 0;
-	virtual void onEntityAdd(const std::shared_ptr<Entity>& e) {};
-	virtual void onEntityRemove(const std::shared_ptr<Entity>& e) {};
+	virtual void onEntityAdd(std::shared_ptr<Entity>& e) {}
+	virtual void onEntityRemove(std::shared_ptr<Entity>& e) {}
+	virtual void onSystemAdd(EntityManager& manager) {}
 	virtual const unsigned int& systemId() = 0;
 	const COMPONENT_ID& requirements() { return _requirements; }
 	template <typename T>

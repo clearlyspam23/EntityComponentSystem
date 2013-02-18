@@ -63,6 +63,7 @@ void  EntityManager::addSystem(System* system)
 	else if(_systems[system->systemId()]!=nullptr)
 		delete _systems[system->systemId()];
 	_systems[system->systemId()] = system;
+	system->onSystemAdd(*this);
 }
 
 System* EntityManager::getSystem(unsigned int id)
