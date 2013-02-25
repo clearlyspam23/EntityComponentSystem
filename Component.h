@@ -3,80 +3,51 @@
 
 #include "Typedefs.h"
 #include <vector>
-#include <string>
+#include <utility>
 
-#define COMPONENT                                                             \
-private: static size_t componentID;                                           \
-public: static const size_t& COMPONENTID() { return componentID; }            \
-		virtual const size_t& componentId() { return componentID; }                      
+#define REGISTER_COMPONENT(type, id)                     \
+size_t Component<type>::ID = id;                         \
+Component<type>::ComponentRegistration Component<type>::reg(id)
 
-#define REGISTER_COMPONENT(type, id)                                          \
-    size_t type::componentID = id;                                            \
-    namespace component {                                                     \
-    namespace                                                                 \
-    {                                                                         \
-        template<class T>                                                     \
-        class ComponentRegistration;                                          \
-                                                                              \
-        template<>                                                            \
-        class ComponentRegistration<type>                                     \
-        {                                                                     \
-            static const ::component::RegistryEntry<type>& reg;               \
-        };                                                                    \
-                                                                              \
-        const ::component::RegistryEntry<type>&                               \
-            ComponentRegistration<type>::reg =                                \
-                ::component::RegistryEntry<type>::Instance(id);               \
-	}}
+class BaseComponent;
 
+typedef BaseComponent* (*CreateComponentFunc)();
+typedef void (*DestroyComponentFunc)(BaseComponent*);
+typedef std::vector<std::pair<CreateComponentFunc, DestroyComponentFunc>> ComponentRegistry;
 
-class Component
+class BaseComponent
 {
 public:
-	virtual ~Component() {}
-	virtual const size_t& componentId() = 0;
+	static BaseComponent* create(size_t id) { return registry()[id].first(); }
+	static void destroy(BaseComponent* component, size_t id) { registry()[id].second(component); }
+protected:
+	BaseComponent() {}
+	~BaseComponent() {}
+	static ComponentRegistry& registry() { static ComponentRegistry reg(MAX_COMPONENTS); return reg; }
 };
 
-namespace component{
 
-	Component* create(size_t id);
-	void destroy(Component* component);
-
-
-
-	typedef Component* (*CreateComponentFunc)();
-	typedef std::vector<CreateComponentFunc> ComponentRegistry;
-
-	inline ComponentRegistry& getComponentRegistry()
+template <typename T>
+class Component : public BaseComponent
+{
+private:
+	static BaseComponent* create() { return new T; }
+	static void destroy(BaseComponent* t) { delete static_cast<T*>(t); }
+	class ComponentRegistration
 	{
-		static ComponentRegistry reg(MAX_COMPONENTS);
-		return reg;
-	}
-
-	template <typename T>
-	Component* createComponent(){
-		return new T;
-	}
-
-	template<typename T>
-	class RegistryEntry
-	{
-		public:
-            static RegistryEntry<T>& Instance(size_t id)
-            {
-                static RegistryEntry<T> inst(id);
-                return inst;
-            }
-          private:
-            RegistryEntry(size_t id)
-            {
-                CreateComponentFunc func = createComponent<T>;
-				ComponentRegistry& reg = getComponentRegistry();
-				reg[id] = func;
-            }
-            RegistryEntry(const RegistryEntry<T>&);
-            RegistryEntry& operator=(const RegistryEntry<T>&);
+	public:
+		ComponentRegistration(size_t id){ BaseComponent::registry()[id] = std::pair<CreateComponentFunc, DestroyComponentFunc>(create, destroy); }
 	};
-} //component
+public:
+	size_t componentId() { return ID; }
+	static size_t COMPONENTID() { return ID; }
+protected:
+	Component() {}
+	~Component() {}
+private:
+	static size_t ID;
+	static ComponentRegistration reg;
+};
+
 
 #endif //COMPONENT_H

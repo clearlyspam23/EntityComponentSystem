@@ -11,7 +11,7 @@
 
 class Entity;
 class EntityTemplate;
-class System;
+class BaseSystem;
 
 class EntityManager
 {
@@ -32,14 +32,14 @@ public:
 
 	std::set<std::shared_ptr<Entity>> getEntitiesWithComponents(const COMPONENT_ID& components) const;
 
-	void addSystem(System* system);
+	void addSystem(BaseSystem* system);
 
 	template<typename T>
 	T* getSystem();
 
-	System* getSystem(unsigned int id);
+	BaseSystem* getSystem(unsigned int id);
 
-	void onTick(float delta);
+	void onTick(double delta);
 private:
 	void _modifyEntity(std::shared_ptr<Entity> e, const EntityTemplate& t);
 	void _removeEntity(std::shared_ptr<Entity> entity);
@@ -47,7 +47,7 @@ private:
 	EntityManager(const EntityManager& manager);
 	EntityManager& operator=(EntityManager other);
 	std::set<std::shared_ptr<Entity>> _entities;
-	std::vector<System*> _systems;
+	std::vector<BaseSystem*> _systems;
 	std::list<std::shared_ptr<Entity>> toBeAdded;
 	std::list<std::shared_ptr<Entity>> toBeRemoved;
 	std::list<std::pair<std::shared_ptr<Entity>, EntityTemplate>> toBeModified;

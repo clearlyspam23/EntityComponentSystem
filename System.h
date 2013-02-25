@@ -4,30 +4,36 @@
 #include <memory>
 #include "Entity.h"
 
-#define SYSTEM                                                                \
-private: static unsigned int systemID;                                        \
-public: static const unsigned int& SYSTEMID() { return systemID; }            \
-		virtual const unsigned int& systemId() { return systemID; }   
-
 #define REGISTER_SYSTEM(type, id)                                             \
-    unsigned int type::systemID = id;
+    unsigned int System<type>::systemID = id;
 
-class System
+class BaseSystem
 {
 public:
-	System() : _requirements(0) {}
-	virtual ~System() {}
+	virtual ~BaseSystem() {}
+	const COMPONENT_ID& requirements() { return _requirements; }
+	bool matchesRequirements(const std::shared_ptr<Entity>& entity) const { return (entity->getIncludedComponents()&_requirements)==_requirements; }
+	virtual unsigned int systemId() = 0;
 	virtual void onTick(const double& delta, EntityManager& manager) = 0;
 	virtual void onEntityAdd(std::shared_ptr<Entity>& e) {}
 	virtual void onEntityRemove(std::shared_ptr<Entity>& e) {}
 	virtual void onSystemAdd(EntityManager& manager) {}
-	virtual const unsigned int& systemId() = 0;
-	const COMPONENT_ID& requirements() { return _requirements; }
-	template <typename T>
-	void require() { _requirements.set(T::COMPONENTID()); }
-	bool matchesRequirements(const std::shared_ptr<Entity>& entity) const { return (entity->getIncludedComponents()&_requirements)==_requirements; }
+	template <typename U>
+	void require() { _requirements.set(Component<U>::COMPONENTID()); }
+protected:
+	BaseSystem() : _requirements(0) {}
 private:
 	COMPONENT_ID _requirements;
+};
+
+template <typename T>
+class System : public BaseSystem
+{
+public:
+	virtual unsigned int systemId() { return systemID; }
+	static unsigned int SYSTEMID() { return systemID; }
+private:
+	static unsigned int systemID;
 };
 
 #endif //SYSTEM_H

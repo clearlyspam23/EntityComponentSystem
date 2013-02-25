@@ -10,7 +10,7 @@ using namespace std;
 
 EntityManager::~EntityManager()
 {
-	for(System* s : _systems)
+	for(BaseSystem* s : _systems)
 	{
 		delete s;
 	}
@@ -56,7 +56,7 @@ set<shared_ptr<Entity>> EntityManager::getEntitiesWithComponents(const COMPONENT
 	return set;
 }
 
-void  EntityManager::addSystem(System* system)
+void  EntityManager::addSystem(BaseSystem* system)
 {
 	if(_systems.size()<=system->systemId())
 		_systems.resize(system->systemId()+1, nullptr);
@@ -66,19 +66,19 @@ void  EntityManager::addSystem(System* system)
 	system->onSystemAdd(*this);
 }
 
-System* EntityManager::getSystem(unsigned int id)
+BaseSystem* EntityManager::getSystem(unsigned int id)
 {
 	return _systems[id];
 }
 
-void EntityManager::onTick(float delta)
+void EntityManager::onTick(double delta)
 {
 	for(;toBeAdded.size()>0;toBeAdded.pop_front())
 	{
 		std::shared_ptr<Entity> e = toBeAdded.front();
 		_createEntity(e);
 	}
-	for(System* s : _systems)
+	for(BaseSystem* s : _systems)
 	{
 		if(s!=nullptr)
 			s->onTick(delta, *this);
@@ -97,7 +97,7 @@ void EntityManager::onTick(float delta)
 
 void EntityManager::_createEntity(std::shared_ptr<Entity>& e)
 {
-	for(System* s : _systems)
+	for(BaseSystem* s : _systems)
 	{
 		if(s!=nullptr&&s->matchesRequirements(e))
 			s->onEntityAdd(e);
@@ -107,7 +107,7 @@ void EntityManager::_createEntity(std::shared_ptr<Entity>& e)
 
 void EntityManager::_removeEntity(std::shared_ptr<Entity> entity)
 {
-	for(System* s : _systems)
+	for(BaseSystem* s : _systems)
 	{
 		if(s!=nullptr&&s->matchesRequirements(entity))
 			s->onEntityRemove(entity);
@@ -117,14 +117,14 @@ void EntityManager::_removeEntity(std::shared_ptr<Entity> entity)
 
 void EntityManager::_modifyEntity(std::shared_ptr<Entity> entity, const EntityTemplate& t)
 {
-	std::set<System*> currentSystems;
-	for(System* s : _systems)
+	std::set<BaseSystem*> currentSystems;
+	for(BaseSystem* s : _systems)
 	{
 		if(s!=nullptr&&s->matchesRequirements(entity))
 			currentSystems.insert(s);
 	}
 	t.reconstructEntity(entity);
-	 for(System* s : _systems)
+	 for(BaseSystem* s : _systems)
 	 {
 		 if(s!=nullptr&&s->matchesRequirements(entity)&&currentSystems.find(s)==currentSystems.end())
 		 {
