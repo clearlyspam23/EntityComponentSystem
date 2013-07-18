@@ -4,9 +4,8 @@ To use this code, download and compile it on your choice of compiler.
 
 *******COMPONENTS*******
 
-to define a component, first publicly extend the Component class (defined in Component.h)
-then, at the top of your class declaration, include the macro COMPONENT
-then, at some point in your code (preferably in a .cpp), include the macro REGISTER_COMPONENT(class, number)
+to define a component, first publicly extend the Component class (defined in Component.h), passing as a template argument the name of the subclass
+then, at some point in your code (in an appropriate source file), include the macro REGISTER_COMPONENT(class, number)
 where class is the typename of the Component class you wish to register, and number is the id number you wish to give it.
 please note that 0<=id<MAX_COMPONENTS (defined in typedefs.h, default 32)
 
@@ -19,9 +18,8 @@ ComponentCoordinate2d.h
 
 	#include <Component.h>
 
-	class ComponentCoordinate2d : public Component
+	class ComponentCoordinate2d : public Component<ComponentCoordinate2d>
 	{
-		COMPONENT
 	public:
 		double _x;
 		double _y;
@@ -35,7 +33,8 @@ ComponentCoordinate2d.cpp
 
 *******SYSTEMS********
 
-to define a System, simply publicly extend System, and overwrite the method
+to define a System, simply publicly extend System (passing the Derived class name as the template argument, similar to components), 
+and overwrite the method
 
 	virtual void onTick(const double& delta, EntityManager& manager);
 
