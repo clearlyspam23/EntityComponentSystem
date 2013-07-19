@@ -4,9 +4,16 @@ To use this code, download and compile it on your choice of compiler.
 
 *******COMPONENTS*******
 
+<<<<<<< HEAD
 to define a component, first publicly extend the Component class (defined in Component.h), passing as a template argument the name of the subclass
 then, at some point in your code (in an appropriate source file), include the macro REGISTER_COMPONENT(class, number)
 where class is the typename of the Component class you wish to register, and number is the id number you wish to give it.
+=======
+to define a component, first publicly extend the Component class (defined in Component.h)
+then, at the top of your class declaration, include the macro COMPONENT
+then, at some point in your code (preferably in a .cpp), include the macro REGISTER_COMPONENT(class, number)
+where class is the typename of the Component class you wish to register, and number is the unique id number you wish to give it.
+>>>>>>> f1baee24d0c22828ef51791215b03a020551f673
 please note that 0<=id<MAX_COMPONENTS (defined in typedefs.h, default 32)
 
 for example:
@@ -33,7 +40,14 @@ ComponentCoordinate2d.cpp
 
 *******SYSTEMS********
 
+<<<<<<< HEAD
 to define a System, simply publicly extend System (passing the Derived class name as the template argument, similar to components), 
+=======
+to define a System, simply publicly extend System, register the new class
+
+	REGISTER_SYSTEM(SystemMovement, 0);
+
+>>>>>>> f1baee24d0c22828ef51791215b03a020551f673
 and overwrite the method
 
 	virtual void onTick(const double& delta, EntityManager& manager);
@@ -83,12 +97,12 @@ Then, in order to construct an Entity matching this EntityTemplate's definition,
 
 	std::shared_ptr<Entity> createEntity(const EntityTemplate& t);
 
-or modify an existing entity by using
+or modify an existing entity through the EntityManager by using
 
 	void modifyEntity(std::shared_ptr<Entity> e, const EntityTemplate& t);
 
-which causes an already existing entity's components to change to match the new EntityTemplate provided
-any components which the two templates have in common is saved, and so any state it holds will remain after modification
+which causes an already existing entity's components to change to match the new EntityTemplate during the next onTick event;
+any components which the two templates have in common are saved, and so any state it holds will remain after modification.
 
 To delete entities, call:
 
@@ -100,7 +114,7 @@ And in order to get Entities, call:
 
 	std::set<std::shared_ptr<Entity>> getEntitiesWithComponents(const COMPONENT_ID& components) const;
 
-in order for Entity's to be operated on, Systems have to be added to the EntityManager, to do this, call:
+in order for Entities to be operated on, Systems have to be added to the EntityManager. To do this, call:
 
 	void addSystem(System* system);
 
